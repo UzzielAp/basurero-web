@@ -1,0 +1,68 @@
+#include <Servo.h>
+
+Servo servo;  // Crear un objeto servo
+
+int pinSensor = 3; // Pin para el sensor de voltaje
+
+int trigPin = 5;   // Pin del trigger del sensor ultrasónico
+int echoPin = 6;   // Pin del echo del sensor ultrasónico
+int servoPin = 7;  // Pin del servomotor
+
+long duration, dist;
+long aver[3];
+
+int lastDist = 0;
+bool servoMoved = false;
+
+void setup() {
+    servo.attach(servoPin);
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+    pinMode(pinSensor, INPUT); // Configura el pin del sensor como entrada
+    servo.write(0);
+    delay(1000);
+}
+
+void measure() {
+    digitalWrite(trigPin, LOW);
+    delayMicroseconds(5);
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(trigPin, LOW);
+
+    duration = pulseIn(echoPin, HIGH);
+    dist = (duration / 2) / 29.1;
+}
+
+void loop() {
+    // Verifica el voltaje en pinSensor
+    int sensorValue = digitalRead(pinSensor);
+
+    // Si la señal en pinSensor es mayor a 4V (HIGH), bloquea el funcionamiento
+    if (sensorValue == HIGH) {
+        // Se considera que el basurero está lleno, no se abre el servomotor
+        return; // Sale del loop sin hacer nada más
+    }
+
+    for (int i = 0; i <= 2; i++) {
+        measure();
+        aver[i] = dist;
+        delay(10);
+    }
+
+    dist = (aver[0] + aver[1] + aver[2]) / 3;
+
+    if (dist > 0 && dist < 150 && !servoMoved && abs(dist - lastDist) > 10) {
+        lastDist = dist;
+        servo.write(90);
+        delay(3000);
+        servo.write(0);
+        delay(1000);
+        servoMoved = true;
+    }
+
+    if (dist > 150 && servoMoved) {
+        delay(500);
+        servoMoved = false;
+    }
+}

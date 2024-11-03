@@ -66,9 +66,9 @@
             <script>
                 const socket = io('http://localhost:3000');
                 const basureros = [
-                    { id: 1, lleno: false, sensorFuego: false, enUso: true, encendido: true, peso: 5.2 },
-                    { id: 2, lleno: true, sensorFuego: false, enUso: false, encendido: true, peso: 10.8 },
-                    { id: 3, lleno: false, sensorFuego: true, enUso: false, encendido: false, peso: 2.3 },
+                    { id: 1, lleno: false, sensorFuego: false, enUso: true, encendido: true, peso: 0 },
+                    { id: 2, lleno: false, sensorFuego: false, enUso: false, encendido: true, peso: 0 },
+                    { id: 3, lleno: false, sensorFuego: false, enUso: false, encendido: true, peso: 0 },
                 ];
 
                 const modal = document.getElementById('modal');
@@ -112,14 +112,15 @@
                 }
 
                 // Recibir datos desde el servidor y actualizar el arreglo de basureros
-                socket.on('basureroData', data => {
-                    basureros.forEach(basurero => {
-                        if (basurero.id === data.id) {
-                            basurero.lleno = data.lleno;
-                            basurero.sensorFuego = data.sensorFuego;
-                            basurero.enUso = data.enUso;
-                            basurero.encendido = data.encendido;
-                            basurero.peso = data.peso;
+                socket.on('updateBasureros', (data) => {
+                    data.forEach((nuevoBasurero) => {
+                        const basurero = basureros.find(b => b.id === nuevoBasurero.id);
+                        if (basurero) {
+                            basurero.lleno = nuevoBasurero.lleno;
+                            basurero.sensorFuego = nuevoBasurero.sensorFuego;
+                            basurero.enUso = nuevoBasurero.enUso;
+                            basurero.encendido = nuevoBasurero.encendido;
+                            basurero.peso = nuevoBasurero.peso;
                         }
                     });
                 });
@@ -132,6 +133,7 @@
             <p class="text-center">&copy; 2024 LIMPIEZA .AU.. Todos los derechos reservados.</p>
         </div>
     </footer>
+    
     
 </body>
 </html>
