@@ -18,25 +18,26 @@
 </head>
 <body class="bg-image min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-        <div class="bg-white bg-opacity-75 rounded-lg shadow-xl p-8 mb-12"> <!-- Aumentada la transparencia -->
+        <div class="bg-white bg-opacity-75 rounded-lg shadow-xl p-8 mb-12">
             <h1 class="text-4xl font-bold text-center mb-10 eco-text p-4 border-2 border-green-500 rounded-lg inline-block mx-auto">
                 LIMPIEZA .AU.
             </h1>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                <div class="eco-primary p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90"> <!-- Aumentada la transparencia -->
+                <!-- Iconos y etiquetas de los basureros -->
+                <div class="eco-primary p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90" data-index="0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 mx-auto text-white opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     <p class="text-center mt-4 text-lg font-medium text-white">Basurero 1</p>
                 </div>
-                <div class="eco-secondary p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90"> <!-- Aumentada la transparencia -->
+                <div class="eco-secondary p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90" data-index="1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 mx-auto text-white opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     <p class="text-center mt-4 text-lg font-medium text-white">Basurero 2</p>
                 </div>
-                <div class="eco-accent p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90"> <!-- Aumentada la transparencia -->
+                <div class="eco-accent p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90" data-index="2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 mx-auto text-white opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
@@ -44,12 +45,85 @@
                 </div>
             </div>
 
-            <div class="mb-12">
-                <h2 class="text-3xl font-bold text-center mb-8 eco-text">Nuestro Equipo</h2>
-                <p class="text-center text-gray-800 text-lg">
-                    En LIMPIEZA .AU., nuestro equipo está comprometido con la limpieza y el medio ambiente. 
-                </p>
+            <!-- Modal -->
+            <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div class="mt-3 text-center">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title"></h3>
+                        <div class="mt-2 px-7 py-3">
+                            <p class="text-sm text-gray-500" id="modal-content"></p>
+                        </div>
+                        <div class="items-center px-4 py-3">
+                            <button id="close-modal" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Script de Socket.io y funcionalidad de modal -->
+            <script>
+                const socket = io('http://localhost:3000');
+                const basureros = [
+                    { id: 1, lleno: false, sensorFuego: false, enUso: true, encendido: true, peso: 5.2 },
+                    { id: 2, lleno: true, sensorFuego: false, enUso: false, encendido: true, peso: 10.8 },
+                    { id: 3, lleno: false, sensorFuego: true, enUso: false, encendido: false, peso: 2.3 },
+                ];
+
+                const modal = document.getElementById('modal');
+                const modalTitle = document.getElementById('modal-title');
+                const modalContent = document.getElementById('modal-content');
+                const closeModal = document.getElementById('close-modal');
+
+                document.querySelectorAll('.eco-primary, .eco-secondary, .eco-accent').forEach((el, index) => {
+                    el.addEventListener('click', () => showModal(basureros[index]));
+                });
+
+                closeModal.addEventListener('click', () => modal.classList.add('hidden'));
+
+                function showModal(basurero) {
+                    modalTitle.textContent = `Información del Basurero ${basurero.id}`;
+                    modalContent.innerHTML = `
+                        <div class="space-y-4 mt-4">
+                            <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
+                                <span class="font-medium">Lleno:</span>
+                                <div class="w-6 h-6 rounded-full ${basurero.lleno ? 'bg-red-500' : 'bg-green-500'}"></div>
+                            </div>
+                            <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
+                                <span class="font-medium">Sensor de fuego:</span>
+                                <div class="w-6 h-6 rounded-full ${basurero.sensorFuego ? 'bg-red-500' : 'bg-green-500'}"></div>
+                            </div>
+                            <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
+                                <span class="font-medium">En uso:</span>
+                                <div class="w-6 h-6 rounded-full ${basurero.enUso ? 'bg-green-500' : 'bg-red-500'}"></div>
+                            </div>
+                            <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
+                                <span class="font-medium">Encendido:</span>
+                                <div class="w-6 h-6 rounded-full ${basurero.encendido ? 'bg-green-500' : 'bg-red-500'}"></div>
+                            </div>
+                            <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
+                                <span class="font-medium">Peso (kg):</span>
+                                <span class="text-gray-700 font-semibold">${basurero.peso}</span>
+                            </div>
+                        </div>
+                    `;
+                    modal.classList.remove('hidden');
+                }
+
+                // Recibir datos desde el servidor y actualizar el arreglo de basureros
+                socket.on('basureroData', data => {
+                    basureros.forEach(basurero => {
+                        if (basurero.id === data.id) {
+                            basurero.lleno = data.lleno;
+                            basurero.sensorFuego = data.sensorFuego;
+                            basurero.enUso = data.enUso;
+                            basurero.encendido = data.encendido;
+                            basurero.peso = data.peso;
+                        }
+                    });
+                });
+            </script>
         </div>
     </div>
 
@@ -58,38 +132,6 @@
             <p class="text-center">&copy; 2024 LIMPIEZA .AU.. Todos los derechos reservados.</p>
         </div>
     </footer>
-
-    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title"></h3>
-                <div class="mt-2 px-7 py-3">
-                    <p class="text-sm text-gray-500" id="modal-content"></p>
-                </div>
-                <div class="items-center px-4 py-3">
-                    <button id="close-modal" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
-                        Cerrar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const socket = io('http://localhost:3000');
-
-        socket.on('basureroData', (data) => {
-            // Actualiza el contenido del basurero con la data recibida
-            const basureroIndex = 0; // Ejemplo: basurero con ID 1
-            basureros[basureroIndex].lleno = data.lleno;
-            basureros[basureroIndex].distancia = data.distancia;
-
-            // Puedes actualizar el modal si está abierto
-            const modalContent = document.getElementById('modal-content');
-            if (!modal.classList.contains('hidden')) {
-                showModal(basureros[basureroIndex]);
-            }
-        });
-    </script>
+    
 </body>
 </html>

@@ -1,11 +1,11 @@
 const SerialPort = require('serialport');
-const Readline = require('@serialport/parser-readline');
+const { ReadlineParser } = require('@serialport/parser-readline');
 const http = require('http');
 const socketIo = require('socket.io');
 
 // Configura el puerto serial (ajusta el nombre del puerto según el tuyo)
-const port = new SerialPort('COM3', { baudRate: 9600 });
-const parser = port.pipe(new Readline({ delimiter: '\n' }));
+const port = new SerialPort.SerialPort({ path: 'COM3', baudRate: 9600 });
+const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
 
 // Configura el servidor HTTP y Socket.io
 const server = http.createServer();
