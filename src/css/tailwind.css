@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.eco-bg {
+    background-color: #f0f4f8;
+}
+.eco-primary {
+    background-color: #4a5568;
+}
+.eco-secondary {
+    background-color: #68d391;
+}
+.eco-accent {
+    background-color: #9ae6b4;
+}
+.eco-text {
+    color: #2d3748;
+}
