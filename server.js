@@ -1,30 +1,38 @@
-const express = require('express'); // Importar Express
+const express = require('express');
 const SerialPort = require('serialport');
 const { ReadlineParser } = require('@serialport/parser-readline');
 const http = require('http');
-const socketIo = require('socket.io');
-const cors = require('cors'); // Importar CORS
+const { Server } = require('socket.io');
+const cors = require('cors');
 
-// Crear una aplicación Express
 const app = express();
-app.use(cors({ origin: 'http://127.0.0.1:5500' })); // Permitir solicitudes desde esta URL
+const server = http.createServer(app);
 
-// Configura el puerto serial (ajusta el nombre del puerto según el tuyo)
+// Configuración de CORS para Express
+app.use(cors({
+  origin: "http://127.0.0.1:5500",
+  methods: ["GET", "POST"],
+  credentials: true
+}));
+
+// Configuración de Socket.IO con opciones CORS
+const io = new Server(server, {
+  cors: {
+    origin: "http://127.0.0.1:5500",
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
 const port = new SerialPort.SerialPort({ path: 'COM3', baudRate: 9600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
 
-// Configura el servidor HTTP y Socket.io
-const server = http.createServer(app);
-const io = socketIo(server);
-
-// Mantener un registro de los basureros
 const basureros = [
-    { id: 1, lleno: false, sensorFuego: false, enUso: true, encendido: true, peso: 0 },
+    { id: 1, lleno: false, sensorFuego: false, enUso: false, encendido: true, peso: 0 },
     { id: 2, lleno: false, sensorFuego: false, enUso: false, encendido: true, peso: 0 },
     { id: 3, lleno: false, sensorFuego: false, enUso: false, encendido: true, peso: 0 },
 ];
 
-// Función para analizar los datos enviados desde Arduino
 function parseData(line) {
     const data = {};
     line.split(',').forEach(item => {
@@ -58,6 +66,7 @@ app.get('/', (req, res) => {
     res.send('Servidor corriendo');
 });
 
-server.listen(3000, () => {
-    console.log('Servidor corriendo en http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

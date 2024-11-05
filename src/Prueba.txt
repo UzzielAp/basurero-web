@@ -58,11 +58,11 @@ bool isTrashFull() {
 }
 
 void loop() {
-    bool isfull = isTrashFull();
+    bool isFull = isTrashFull();
     bool isInUse = false;
 
     // Verificar si el basurero está lleno antes de continuar
-   if (isFull) {
+    if (isFull) {
         servo.write(0);  // Asegura que la tapa esté cerrada
         delay(1000);     // Espera antes de la próxima verificación
     } else {
