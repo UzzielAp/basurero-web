@@ -2,27 +2,28 @@
 
 Servo servo;  // Crear un objeto servo
 
-int pinSensor = 3; // Pin para el sensor de voltaje
+int trigPin = 5;       // Pin del trigger del sensor ultrasónico
+int echoPin = 6;       // Pin del echo del sensor ultrasónico
+int servoPin = 7;      // Pin del servomotor
+int darkSensorPin = A5; // Pin del sensor de oscuridad
 
-int trigPin = 5;   // Pin del trigger del sensor ultrasónico
-int echoPin = 6;   // Pin del echo del sensor ultrasónico
-int servoPin = 7;  // Pin del servomotor
+long duration, dist;      // Variables para duración y distancia
+long aver[3];             // Array para promediar las mediciones de distancia
 
-long duration, dist;
-long aver[3];
-
-int lastDist = 0;
-bool servoMoved = false;
+int lastDist = 300;       // Almacena la última distancia medida
+bool servoMoved = false;  // Estado de movimiento del servo
+bool isBlocked = false;   // Estado de bloqueo del basurero
 
 void setup() {
+    Serial.begin(9600); 
     servo.attach(servoPin);
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
-    pinMode(pinSensor, INPUT); // Configura el pin del sensor como entrada
-    servo.write(0);
+    servo.write(0); // Cerrar la tapa inicialmente
     delay(1000);
 }
 
+// Función para medir distancia usando el sensor ultrasónico
 void measure() {
     digitalWrite(trigPin, LOW);
     delayMicroseconds(5);
@@ -32,37 +33,72 @@ void measure() {
 
     duration = pulseIn(echoPin, HIGH);
     dist = (duration / 2) / 29.1;
+    
+    // Filtrar lecturas erróneas por encima de 300 cm
+    if (dist > 300) {
+        dist = 300;  // Limitar a 300 cm como máximo
+    }
+}
+
+// Función para verificar si el basurero está lleno
+bool isTrashFull() {
+    float sensorVoltage = analogRead(darkSensorPin) * (5.0 / 1023.0); // Convertir lectura a voltios
+
+    if (sensorVoltage >= 3.0) {
+        if (!isBlocked) {
+            isBlocked = true;  // Marca el basurero como bloqueado
+        }
+        return true;  // Basurero lleno
+    } else {
+        if (isBlocked) {
+            isBlocked = false; // Marca el basurero como desbloqueado
+        }
+        return false; // Basurero no lleno
+    }
 }
 
 void loop() {
-    // Verifica el voltaje en pinSensor
-    int sensorValue = digitalRead(pinSensor);
+    bool isfull = isTrashFull();
+    bool isInUse = false;
 
-    // Si la señal en pinSensor es mayor a 4V (HIGH), bloquea el funcionamiento
-    if (sensorValue == HIGH) {
-        // Se considera que el basurero está lleno, no se abre el servomotor
-        return; // Sale del loop sin hacer nada más
+    // Verificar si el basurero está lleno antes de continuar
+   if (isFull) {
+        servo.write(0);  // Asegura que la tapa esté cerrada
+        delay(1000);     // Espera antes de la próxima verificación
+    } else {
+        // Medir distancia y calcular el promedio de tres mediciones
+        for (int i = 0; i <= 2; i++) {
+            measure();
+            aver[i] = dist;
+            delay(10);
+        }
+
+        dist = (aver[0] + aver[1] + aver[2]) / 3;
+
+        // Abre la tapa si la distancia es menor a 150 cm y si ha habido un cambio significativo en la distancia
+        if (dist > 0 && dist < 150 && !servoMoved && abs(dist - lastDist) > 10) {
+            lastDist = dist;         // Actualiza la última distancia medida
+            servo.write(90);          // Abre la tapa
+            delay(3000);              // Mantiene abierta la tapa por 3 segundos
+            servo.write(0);           // Cierra la tapa
+            delay(1000);              // Espera para asegurar el cierre completo
+            servoMoved = true;        // Marca que la tapa se ha movido
+            isInUse = true;           // Marca que el basurero está en uso
+        }
+
+        // Reinicia el estado del servo si la distancia es mayor que 150 cm
+        if (dist > 150 && servoMoved) {
+            servoMoved = false;       // Permite que se abra la tapa nuevamente cuando alguien se acerque
+        }
     }
 
-    for (int i = 0; i <= 2; i++) {
-        measure();
-        aver[i] = dist;
-        delay(10);
-    }
+    // Enviar datos al servidor
+    Serial.print("Lleno:");
+    Serial.print(isFull ? "1" : "0");
+    Serial.print(",EnUso:");
+    Serial.print(isInUse ? "1" : "0");
+    Serial.print(",Encendido:1");
+    Serial.println();
 
-    dist = (aver[0] + aver[1] + aver[2]) / 3;
-
-    if (dist > 0 && dist < 150 && !servoMoved && abs(dist - lastDist) > 10) {
-        lastDist = dist;
-        servo.write(90);
-        delay(3000);
-        servo.write(0);
-        delay(1000);
-        servoMoved = true;
-    }
-
-    if (dist > 150 && servoMoved) {
-        delay(500);
-        servoMoved = false;
-    }
+    delay(500); // Pausa de 500 ms al final de cada ciclo
 }

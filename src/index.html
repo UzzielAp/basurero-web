@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LIMPIEZA .AU.</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
     <link rel="stylesheet" type="text/css" href="css/tailwind.css">
     <style>
         .bg-image {
@@ -13,6 +13,14 @@
             background-size: 75%; 
             background-position: center;
             background-repeat: no-repeat;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        .blink {
+            animation: blink 1s infinite;
         }
     </style>
 </head>
@@ -25,23 +33,26 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
                 <!-- Iconos y etiquetas de los basureros -->
-                <div class="eco-primary p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90" data-index="0">
+                <div id="basurero1" class="eco-primary p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90" data-index="0">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 mx-auto text-white opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     <p class="text-center mt-4 text-lg font-medium text-white">Basurero 1</p>
+                    <div id="status1" class="mt-2 text-center text-white"></div>
                 </div>
-                <div class="eco-secondary p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90" data-index="1">
+                <div id="basurero2" class="eco-secondary p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90" data-index="1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 mx-auto text-white opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     <p class="text-center mt-4 text-lg font-medium text-white">Basurero 2</p>
+                    <div id="status2" class="mt-2 text-center text-white"></div>
                 </div>
-                <div class="eco-accent p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90" data-index="2">
+                <div id="basurero3" class="eco-accent p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer bg-opacity-90" data-index="2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 mx-auto text-white opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                     <p class="text-center mt-4 text-lg font-medium text-white">Basurero 3</p>
+                    <div id="status3" class="mt-2 text-center text-white"></div>
                 </div>
             </div>
 
@@ -66,7 +77,7 @@
             <script>
                 const socket = io('http://localhost:3000');
                 const basureros = [
-                    { id: 1, lleno: false, sensorFuego: false, enUso: true, encendido: true, peso: 0 },
+                    { id: 1, lleno: false, sensorFuego: false, enUso: false, encendido: true, peso: 0 },
                     { id: 2, lleno: false, sensorFuego: false, enUso: false, encendido: true, peso: 0 },
                     { id: 3, lleno: false, sensorFuego: false, enUso: false, encendido: true, peso: 0 },
                 ];
@@ -91,10 +102,6 @@
                                 <div class="w-6 h-6 rounded-full ${basurero.lleno ? 'bg-red-500' : 'bg-green-500'}"></div>
                             </div>
                             <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
-                                <span class="font-medium">Sensor de fuego:</span>
-                                <div class="w-6 h-6 rounded-full ${basurero.sensorFuego ? 'bg-red-500' : 'bg-green-500'}"></div>
-                            </div>
-                            <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
                                 <span class="font-medium">En uso:</span>
                                 <div class="w-6 h-6 rounded-full ${basurero.enUso ? 'bg-green-500' : 'bg-red-500'}"></div>
                             </div>
@@ -103,12 +110,44 @@
                                 <div class="w-6 h-6 rounded-full ${basurero.encendido ? 'bg-green-500' : 'bg-red-500'}"></div>
                             </div>
                             <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
+                                <span class="font-medium">Sensor de fuego:</span>
+                                <div id="sensorFuego${basurero.id}" class="w-6 h-6 rounded-full ${basurero.sensorFuego ? 'bg-red-500 blink' : 'bg-green-500'}"></div>
+                            </div>
+                            <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
                                 <span class="font-medium">Peso (kg):</span>
-                                <span class="text-gray-700 font-semibold">${basurero.peso}</span>
+                                <span class="text-gray-700 font-semibold">0</span>
                             </div>
                         </div>
                     `;
                     modal.classList.remove('hidden');
+                }
+
+                function updateBasureroUI(basurero) {
+                    const basureroElement = document.getElementById(`basurero${basurero.id}`);
+                    const statusElement = document.getElementById(`status${basurero.id}`);
+                    
+                    if (basurero.lleno) {
+                        basureroElement.classList.add('bg-red-500');
+                        statusElement.textContent = 'Lleno';
+                    } else if (basurero.enUso) {
+                        basureroElement.classList.add('bg-yellow-500');
+                        statusElement.textContent = 'En uso';
+                    } else {
+                        basureroElement.classList.remove('bg-red-500', 'bg-yellow-500');
+                        statusElement.textContent = 'Disponible';
+                    }
+
+                    // Actualizar el sensor de fuego (parpadeando)
+                    const sensorFuegoElement = document.getElementById(`sensorFuego${basurero.id}`);
+                    if (sensorFuegoElement) {
+                        if (basurero.sensorFuego) {
+                            sensorFuegoElement.classList.add('bg-red-500', 'blink');
+                            sensorFuegoElement.classList.remove('bg-green-500');
+                        } else {
+                            sensorFuegoElement.classList.remove('bg-red-500', 'blink');
+                            sensorFuegoElement.classList.add('bg-green-500');
+                        }
+                    }
                 }
 
                 // Recibir datos desde el servidor y actualizar el arreglo de basureros
@@ -116,11 +155,9 @@
                     data.forEach((nuevoBasurero) => {
                         const basurero = basureros.find(b => b.id === nuevoBasurero.id);
                         if (basurero) {
-                            basurero.lleno = nuevoBasurero.lleno;
-                            basurero.sensorFuego = nuevoBasurero.sensorFuego;
-                            basurero.enUso = nuevoBasurero.enUso;
-                            basurero.encendido = nuevoBasurero.encendido;
-                            basurero.peso = nuevoBasurero.peso;
+                            Object.assign(basurero, nuevoBasurero);
+                            basurero.peso = 0; // Mantener el peso siempre en 0
+                            updateBasureroUI(basurero);
                         }
                     });
                 });
@@ -128,12 +165,10 @@
         </div>
     </div>
 
-    <footer class="bg-green-100 bg-opacity-75 text-green-800 py-6 mt-auto"> <!-- Aumentada la transparencia -->
+    <footer class="bg-green-100 bg-opacity-75 text-green-800 py-6 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <p class="text-center">&copy; 2024 LIMPIEZA .AU.. Todos los derechos reservados.</p>
         </div>
     </footer>
-    
-    
 </body>
 </html>
