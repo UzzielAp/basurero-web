@@ -94,7 +94,12 @@
                 closeModal.addEventListener('click', () => modal.classList.add('hidden'));
 
                 function showModal(basurero) {
-                    modalTitle.textContent = `Información del Basurero ${basurero.id}`;
+                modalTitle.textContent = `Información del Basurero ${basurero.id}`;
+                updateModalContent(basurero);
+                modal.classList.remove('hidden');
+                }
+
+                function updateModalContent(basurero) {
                     modalContent.innerHTML = `
                         <div class="space-y-4 mt-4">
                             <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
@@ -111,32 +116,38 @@
                             </div>
                             <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
                                 <span class="font-medium">Sensor de fuego:</span>
-                                <div id="sensorFuego${basurero.id}" class="w-6 h-6 rounded-full ${basurero.sensorFuego ? 'bg-red-500 blink' : 'bg-green-500'}"></div>
+                                <div class="w-6 h-6 rounded-full ${basurero.sensorFuego ? 'bg-red-500 blink' : 'bg-green-500'}"></div>
                             </div>
                             <div class="flex items-center justify-between bg-gray-100 p-3 rounded-lg">
                                 <span class="font-medium">Peso (kg):</span>
-                                <span class="text-gray-700 font-semibold">0</span>
+                                <span class="text-gray-700 font-semibold">${basurero.peso}</span>
                             </div>
                         </div>
                     `;
-                    modal.classList.remove('hidden');
                 }
 
                 function updateBasureroUI(basurero) {
                     const basureroElement = document.getElementById(`basurero${basurero.id}`);
                     const statusElement = document.getElementById(`status${basurero.id}`);
-                    
+    
                     if (basurero.lleno) {
                         basureroElement.classList.add('bg-red-500');
+                        basureroElement.classList.remove('bg-yellow-500');
                         statusElement.textContent = 'Lleno';
                     } else if (basurero.enUso) {
                         basureroElement.classList.add('bg-yellow-500');
+                        basureroElement.classList.remove('bg-red-500');
                         statusElement.textContent = 'En uso';
                     } else {
                         basureroElement.classList.remove('bg-red-500', 'bg-yellow-500');
                         statusElement.textContent = 'Disponible';
                     }
 
+                     // Actualizar el modal si está abierto y corresponde al basurero actual
+                    if (!modal.classList.contains('hidden') && modalTitle.textContent.includes(`${basurero.id}`)) {
+                        updateModalContent(basurero);
+                    }
+                    
                     // Actualizar el sensor de fuego (parpadeando)
                     const sensorFuegoElement = document.getElementById(`sensorFuego${basurero.id}`);
                     if (sensorFuegoElement) {
