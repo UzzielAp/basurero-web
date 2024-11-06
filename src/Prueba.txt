@@ -97,7 +97,7 @@ void loop() {
     Serial.print(isFull ? "1" : "0");
     Serial.print(",EnUso:");
     Serial.print(isInUse ? "1" : "0");
-    Serial.print(",Encendido:1");
+    Serial.print(",Encendido: 1");
     Serial.println();
 
     delay(500); // Pausa de 500 ms al final de cada ciclo
