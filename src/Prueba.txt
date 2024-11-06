@@ -60,6 +60,7 @@ bool isTrashFull() {
 void loop() {
     bool isFull = isTrashFull();
     bool isInUse = false;
+    bool isOn = true;
 
     // Verificar si el basurero está lleno antes de continuar
     if (isFull) {
@@ -97,7 +98,8 @@ void loop() {
     Serial.print(isFull ? "1" : "0");
     Serial.print(",EnUso:");
     Serial.print(isInUse ? "1" : "0");
-    Serial.print(",Encendido: 1");
+    Serial.print(",Encendido: ");
+    Serial.print(isOn ? "1" : "0")
     Serial.println();
 
     delay(500); // Pausa de 500 ms al final de cada ciclo
