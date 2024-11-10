@@ -28,9 +28,7 @@ const port = new SerialPort.SerialPort({ path: 'COM3', baudRate: 9600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: '\n' }));
 
 const basureros = [
-    { id: 1, lleno: false, sensorFuego: false, enUso: false, encendido: true, peso: 0 },
-    { id: 2, lleno: false, sensorFuego: false, enUso: false, encendido: false, peso: 0 },
-    { id: 3, lleno: false, sensorFuego: false, enUso: false, encendido: false, peso: 0 },
+    { id: 1, lleno: false, sensorFuego: false, enUso: false, encendido: true, peso: 0 }
 ];
 
 function parseData(line) {
