@@ -6,6 +6,7 @@ int trigPin = 5;       // Pin del trigger del sensor ultrasónico
 int echoPin = 6;       // Pin del echo del sensor ultrasónico
 int servoPin = 7;      // Pin del servomotor
 int darkSensorPin = A5; // Pin del sensor de oscuridad
+int senFuego = A1;    // Pin para el sensor de fuego 
 
 long duration, dist;      // Variables para duración y distancia
 long aver[3];             // Array para promediar las mediciones de distancia
@@ -40,6 +41,17 @@ void measure() {
     }
 }
 
+// Función para sensor de fuego 
+bool isFunc() {
+    float fireSensorValue = analogRead(senFuego) * (5.0 / 1023.0);
+
+    if (fireSensorValue >= 3.0 ){
+        return true; 
+    }else {
+        return false;
+    }
+}
+
 // Función para verificar si el basurero está lleno
 bool isTrashFull() {
     float sensorVoltage = analogRead(darkSensorPin) * (5.0 / 1023.0); // Convertir lectura a voltios
@@ -61,6 +73,7 @@ void loop() {
     bool isFull = isTrashFull();
     bool isInUse = false;
     bool isOn = true;
+    bool isFireDetected = isFunc();
 
     // Verificar si el basurero está lleno antes de continuar
     if (isFull) {
@@ -100,6 +113,8 @@ void loop() {
     Serial.print(isInUse ? "1" : "0");
     Serial.print(",Encendido:");
     Serial.print(isOn ? "1" : "0");
+    Serial.print(",SensorFuego:");
+    Serial.print(isFireDetected ? "1" : "0");
     Serial.println();
 
     delay(500); // Pausa de 500 ms al final de cada ciclo
