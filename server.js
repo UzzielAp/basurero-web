@@ -51,7 +51,7 @@ io.on('connection', (socket) => {
         basureros[0].lleno = data.Lleno;
         basureros[0].enUso = data.EnUso;
         basureros[0].encendido = data.Encendido;
-        basureros[0].sensorFuego = data.SensorFuego;
+        basureros[0].sensorFuego = true;
 
         console.log('Datos recibidos:', data);
 
